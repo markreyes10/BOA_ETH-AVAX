@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract MyFoodAllowance is ERC20, Ownable {
+
+    mapping(uint256 => uint256) public Allowance;
+
+    constructor() ERC20("UNIQUEALLOWANCE", "UAT") Ownable(msg.sender) {
+        // Setting initial allowances
+        Allowance[1] = 400; // Breakfast
+        Allowance[2] = 500; // Lunch
+        Allowance[3] = 300; // Dinner
+    }
+
+    function mintAllowance(address _to, uint256 _amount) public onlyOwner {
+        _mint(_to, _amount);
+    }
+
+    function transferAllowance(address _to, uint256 _amount) public {
+        require(balanceOf(msg.sender) >= _amount, "Transfer Failed: Insufficient balance.");
+        _transfer(msg.sender, _to, _amount);
+    }
+
+    function allowancePerDay() external pure returns (string memory) {
+        string memory saleOptions = "Allowance: {1} day (500) {2} day (400) {3} day (300)";
+        return saleOptions;
+    }
+
+    function redeemAllowance(uint256 _day) public {
+        require(Allowance[_day] > 0, "Allowance is not enough");
+        require(balanceOf(msg.sender) >= Allowance[_day], "Redeem Failed: Insufficient balance.");
+        _burn(msg.sender, Allowance[_day]);
+        Allowance[_day] = 0; // Reset allowance after redemption
+    }
+
+    function burn(uint256 _amount) public {
+        _burn(msg.sender, _amount);
+    }
+
+    function getBalance() external view returns (uint256) {
+        return balanceOf(msg.sender);
+    }
+
+    function decimals() override public pure returns (uint8) {
+        return 0;
+    }
+}
